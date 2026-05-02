@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist de Limpeza — AL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --cream: #F2F2F2;
+    --sand: #E0E0E0;
+    --terracotta: #8B1A35;
+    --dark: #1A1A1A;
+    --mid: #6B6B6B;
+    --line: #C8C8C8;
+    --green: #6D1A2E;
+    --green-bg: #F0E8EA;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    color: var(--dark);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 2rem 1rem 5rem;
+  }
+
+  .header {
+    max-width: 680px;
+    margin: 0 auto 2rem;
+    border-bottom: 2px solid var(--dark);
+    padding-bottom: 1.5rem;
+  }
+
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.1;
+  }
+
+  .header h1 em { color: var(--terracotta); font-style: italic; }
+
+  .meta-grid {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+
+  .meta-grid label {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mid);
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .meta-grid input, .meta-grid select {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 6px 10px;
+    color: var(--dark);
+    width: 100%;
+  }
+
+  .meta-grid input:focus, .meta-grid select:focus { outline: none; border-color: var(--terracotta); }
+
+  .progress-row {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.2rem;
+  }
+
+  .progress-bar-wrap {
+    flex: 1;
+    background: var(--sand);
+    border-radius: 2px;
+    height: 5px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--terracotta);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-label { font-size: 0.68rem; color: var(--mid); white-space: nowrap; }
+
+  /* ── grupos ── */
+  .container { max-width: 680px; margin: 0 auto; }
+
+  .group {
+    margin-bottom: 2rem;
+  }
+
+  .group-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    padding-left: 2px;
+  }
+
+  .section {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+
+  .section:last-child { margin-bottom: 0; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--sand);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-title {
+    font-size: 0.67rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .section-count { font-size: 0.62rem; color: var(--mid); }
+
+  .items { padding: 0.15rem 0; }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.55rem 1rem;
+    border-bottom: 1px solid var(--cream);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .item:last-child { border-bottom: none; }
+  .item:hover { background: #F8F8F8; }
+  .item.done { background: var(--green-bg); }
+  .item.done .item-label { color: var(--mid); text-decoration: line-through; }
+
+  .checkbox {
+    width: 17px;
+    height: 17px;
+    border: 1.5px solid var(--line);
+    border-radius: 3px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all 0.12s;
+    background: white;
+  }
+
+  .item.done .checkbox { background: var(--green); border-color: var(--green); }
+  .checkmark { opacity: 0; color: white; font-size: 10px; font-weight: 700; }
+  .item.done .checkmark { opacity: 1; }
+
+  .item-label { font-size: 0.8rem; line-height: 1.45; color: var(--dark); flex: 1; }
+  .item-note { font-size: 0.66rem; color: var(--mid); margin-top: 2px; font-style: italic; }
+
+  /* item com campo numérico dinâmico */
+  .item-label .dyn { color: var(--terracotta); font-weight: 500; }
+
+  .obs-wrap {
+    max-width: 680px;
+    margin: 0.5rem auto 0;
+  }
+
+  .obs-wrap label {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mid);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .obs-wrap textarea {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    width: 100%;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 8px 10px;
+    color: var(--dark);
+    resize: vertical;
+    min-height: 56px;
+  }
+
+  .obs-wrap textarea:focus { outline: none; border-color: var(--terracotta); }
+
+  .actions {
+    max-width: 680px;
+    margin: 1rem auto 0;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1.5px solid;
+    flex: 1;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .btn-primary { background: var(--terracotta); border-color: var(--terracotta); color: white; }
+  .btn-primary:hover { background: #6D1428; border-color: #6D1428; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: none; border-color: var(--mid); color: var(--mid); }
+  .btn-secondary:hover { border-color: var(--dark); color: var(--dark); }
+
+  .sheet-link {
+    max-width: 680px;
+    margin: 0.6rem auto 0;
+    text-align: right;
+  }
+
+  .sheet-link a {
+    font-size: 0.65rem;
+    color: var(--mid);
+    text-decoration: none;
+  }
+
+  .sheet-link a:hover { color: var(--terracotta); }
+
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--dark);
+    color: white;
+    font-size: 0.73rem;
+    padding: 10px 20px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 100;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--green); }
+  .toast.error { background: #C0392B; }
+
+  /*季節 badge */
+  .seasonal { display: none; }
+  .seasonal.active { display: flex; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Limpeza<br><em>Caldas Love Affair</em></h1>
+  <div class="meta-grid">
+    <div>
+      <label>Alojamento</label>
+      <select id="field-al">
+        <option value="" disabled selected>— seleccionar —</option>
+        <option value="Tiles">Tiles</option>
+        <option value="Alcino">Alcino</option>
+      </select>
+    </div>
+    <div>
+      <label>Data</label>
+      <input type="date" id="field-data">
+    </div>
+    <div>
+      <label>Responsável pela limpeza</label>
+      <select id="field-responsavel">
+        <option value="" disabled selected>— seleccionar —</option>
+        <option value="Raquel">Raquel</option>
+        <option value="Marta">Marta</option>
+        <option value="Marta & Raquel">Marta & Raquel</option>
+      </select>
+    </div>
+    <div>
+      <label>Hora de início</label>
+      <input type="time" id="field-hora-inicio">
+    </div>
+    <div>
+      <label>Hora de fim</label>
+      <input type="time" id="field-hora-fim">
+    </div>
+      <select id="field-hospedes-num" onchange="render()">
+        <option value="" disabled selected>— seleccionar —</option>
+        <option value="1">1 hóspede</option>
+        <option value="2">2 hóspedes</option>
+        <option value="3">3 hóspedes</option>
+        <option value="4">4 hóspedes</option>
+        <option value="5">5 hóspedes</option>
+      </select>
+    </div>
+    <div>
+      <label>Duração da estadia</label>
+      <select id="field-noites" onchange="render()">
+        <option value="" disabled selected>— seleccionar —</option>
+        <option value="2">2 noites</option>
+        <option value="5">Menos de 1 semana</option>
+        <option value="7">1 semana</option>
+        <option value="14">2 semanas</option>
+        <option value="21">3 semanas</option>
+        <option value="30">1 mês</option>
+      </select>
+    </div>
+    <div class="progress-row">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <span class="progress-label" id="progress-label">0 / 0</span>
+    </div>
+  </div>
+</div>
+
+<div class="container" id="checklist-container"></div>
+
+<div class="obs-wrap">
+  <label>Observações gerais</label>
+  <textarea id="field-obs" placeholder="Notas, itens em falta, anomalias..."></textarea>
+</div>
+
+<div class="obs-wrap" style="margin-top:1rem;">
+  <label>Registo de dano / ocorrência</label>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.5rem;">
+    <div>
+      <label style="font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:3px;">Tipo</label>
+      <select id="field-dano-tipo" style="font-family:'DM Mono',monospace;font-size:0.78rem;background:white;border:1px solid var(--line);border-radius:3px;padding:6px 10px;color:var(--dark);width:100%;">
+        <option value="">— sem ocorrência —</option>
+        <option value="Furto">Furto</option>
+        <option value="Quebra">Quebra</option>
+        <option value="Dano">Dano</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:3px;">O que aconteceu</label>
+      <input type="text" id="field-dano-desc" placeholder="ex: copo partido, toalha manchada..." style="font-family:'DM Mono',monospace;font-size:0.78rem;background:white;border:1px solid var(--line);border-radius:3px;padding:6px 10px;color:var(--dark);width:100%;">
+    </div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-primary" id="btn-save" onclick="guardarRegisto()">↑ Guardar na Spreadsheet</button>
+  <button class="btn btn-secondary" onclick="resetAll()">↺ Recomeçar</button>
+</div>
+
+<div class="sheet-link">
+  <a href="https://docs.google.com/spreadsheets/d/1zgBYiw_2c0BJihpqGJbsfanZB5I99R7kx7fdDCULQWA" target="_blank">→ Abrir folha de registos</a>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SPREADSHEET_ID = '1zgBYiw_2c0BJihpqGJbsfanZB5I99R7kx7fdDCULQWA';
+
+// Estrutura de dados: grupos > secções > itens
+// item: { label, note, seasonal:'inverno'|null, dynamic: fn(h,n)=>string|null }
+function buildData(h, n) {
+  // h = nº hóspedes, n = noites
+  const papelRolos = 4; // sempre 4 rolos (incluindo o encertado)
+  return [
+    {
+      group: "Antes de começar",
+      sections: [
+        {
+          icon: "📋", title: "Recomendações e pedidos",
+          items: [
+            { label: "O aspirador não é para água — nunca aspirar coisas molhadas" },
+            { label: "Usar panos diferentes para WC, cozinha e pó — nunca misturar", note: "Esfregões idem: WC / cozinha / pó separados. Deitar fora esfregão e pano húmido de cozinha só quando estiverem muito sujos" },
+            { label: "Remover todos os lixos" },
+            { label: "Bens perecíveis em bom estado: levar para casa ou dar. Nada vai para o lixo", note: "Em último caso, fica a Madame Valinho com eles" },
+            { label: "Deixar o que faz parte dos recarregáveis da casa", note: "Ex: detergentes, azeite, sal — só levar o que sobrou dos consumíveis pessoais do hóspede" },
+          ]
+        },
+      ]
+    },
+    {
+      group: "Tarefas transversais — Interior",
+      sections: [
+        {
+          icon: "🔍", title: "Verificação inicial — estado do espaço",
+          items: [
+            { label: "Nenhum objeto esquecido pelo hóspede anterior", note: "Verificar: WC · cama (dentro e por baixo) · gavetas · armários · cabides" },
+            { label: "Wi-Fi a funcionar — testar ligação" },
+            { label: "Salamandra: tem cinzas para aspirar?", note: "Garantir que estão completamente frias antes de aspirar" },
+            { label: "Telecomando funciona? Pilhas ok?" },
+            { label: "Lâmpadas fundidas — tecto e candeeiros (verificar 2x por divisão)" },
+            { label: "Registar danos existentes com foto (geral + detalhe)", note: "Fotos focadas: uma de contexto/macro e uma de detalhe/micro por dano. Registar antes de limpar." },
+          ]
+        },
+        {
+          icon: "🌀", title: "Pó e superfícies gerais",
+          items: [
+            { label: "Limpar pó em todas as superfícies horizontais (mobília, prateleiras, rodapés)" },
+            { label: "Limpar portas interiores e puxadores — verificar manchas" },
+            { label: "Confirmar que não há bolor nas paredes ou armários" },
+            { label: "Há aranhas ou teias? Há formigas?" },
+            { label: "Limpar candeeiros e abajures" },
+            { label: "Limpar topos dos armários" },
+            { label: "Limpar tomadas e interruptores em todo o espaço" },
+            { label: "Limpar marcas e dedadas nas portas, vidros e espelhos" },
+          ]
+        },
+        {
+          icon: "🧹", title: "Chão — interior",
+          items: [
+            { label: "Aspirar todos os compartimentos (incluindo cantos e debaixo das camas)" },
+            { label: "Aspirar móveis — em particular o interior das gavetas" },
+            { label: "Verificar cotão debaixo das camas" },
+            { label: "Lavar o chão com esfregona própria — não usar a da casa" },
+          ]
+        },
+        {
+          icon: "🔌", title: "Electrodomésticos e equipamentos comuns",
+          items: [
+            { label: "Limpar frigorífico (interior e exterior)" },
+            { label: "Limpar congelador" },
+            { label: "Limpar micro-ondas (interior e exterior)" },
+            { label: "Limpar forno (interior e exterior)" },
+            { label: "Limpar exaustor (filtros e superfície)" },
+            { label: "Limpar armário abaixo do lava-loiça" },
+            { label: "Limpar ecrã da TV com pano seco — sem qualquer detergente", note: "Pano de microfibra, sem spray" },
+            { label: "Desumidificador: limpar dedadas, verificar e encaixar bem o depósito de água, aspirar filtro" },
+          ]
+        },
+        {
+          icon: "🔒", title: "Verificação final — interior",
+          items: [
+            { label: "Janelas fechadas e persianas ajustadas", note: "Se chegada de dia: deixar abertas. Se chegada de noite: fechar" },
+            { label: "Guia de boas-vindas visível" },
+            { label: "Chaves preparadas para entrega" },
+            { label: "Última olhadela — há vestígios de seres humanos na casa?", note: "Verificar os sítios mais óbvios: duche/banheira · lavatório · sanita · chão · almofadas · sofá · lava-loiça · electrodomésticos" },
+          ]
+        },
+      ]
+    },
+    {
+      group: "Tarefas transversais — Exterior",
+      sections: [
+        {
+          icon: "🌿", title: "Exterior e entradas",
+          items: [
+            { label: "Varrer entrada e acessos exteriores" },
+            { label: "Tapetes de entrada estão no sítio?" },
+            { label: "Verificar iluminação exterior" },
+            { label: "Caixote exterior: está limpo? tem saco?" },
+            { label: "Mesas, cadeiras e espreguiçadeiras em bom estado e no lugar" },
+            { label: "Grelhas do churrasco e acessórios OK?", note: "Verificar grelhas, carvão, acendalhas e fósforos — especialmente em tempo seco" },
+          ]
+        },
+      ]
+    },
+    {
+      group: "Por divisão",
+      sections: [
+        {
+          icon: "🛏", title: "Quarto(s)",
+          items: [
+            { label: "Aspirar colchão(ões)" },
+            { label: "O resguardo de colchão precisa de ser substituído?" },
+            { label: `Preparar as duas camas (excepto se houver indicação em contrário)` },
+            { label: "Verificar pêlos nas fronhas, lençóis e capa de edredão", note: "Usar rolo de pêlos se necessário" },
+            { label: "Verificar cotão nos cantos da capa de edredão" },
+            { label: "Limpar cabeceira, mesas de cabeceira, cómodas, armários e gavetas" },
+            { label: "Ajustar persianas e cortinados" },
+            { label: "Verificar cabides suficientes no roupeiro" },
+          ]
+        },
+        {
+          icon: "🛁", title: "Casa de banho",
+          items: [
+            { label: "Limpar, esfregar e desinfetar sanita — interior, exterior, tampa e base", note: "Confirmar que está mesmo esfregada, não só passada" },
+            { label: "Verificar/repor gel WC (Pato ou equiv.)" },
+            { label: "Limpar lavatório e torneiras" },
+            { label: "Limpar duche/banheira e ralos" },
+            { label: "Verificar cabelos no chão e no ralo" },
+            { label: "Limpar prateleiras e superfícies" },
+            { label: "Caixote do WC: está limpo? tem saco?" },
+          ]
+        },
+        {
+          icon: "🍳", title: "Cozinha",
+          items: [
+            { label: "Limpar bancada" },
+            { label: "Limpar fogão/placa — incluindo grelhas e botões" },
+            { label: "A loiça está limpa?" },
+            { label: "Os talheres estão limpos?" },
+            { label: "As gavetas estão limpas (interior)?" },
+            { label: "As portas dos armários da cozinha estão limpas?" },
+            { label: "Verificar copos e chávenas (marcas de batom, calcário)" },
+            { label: "Caixote da cozinha: está limpo? tem saco?" },
+            { label: "Há saco extra debaixo do lava-loiça?" },
+          ]
+        },
+        {
+          icon: "🛋", title: "Sala / Zona de estar",
+          items: [
+            { label: "Aspirar sofá e almofadas" },
+            { label: "Há manchas no sofá? Colocar uma das mantas por cima", note: "Ziguezague amarelo escuro, ziguezague verde claro, ou cinza com favos" },
+            { label: "Limpar superfícies da sala" },
+            { label: "Reposicionar mobiliário se necessário" },
+          ]
+        },
+      ]
+    },
+    {
+      group: "Têxteis",
+      sections: [
+        {
+          icon: "🍽", title: "Têxteis de cozinha",
+          items: [
+            { label: "Tapete de cozinha (colocar no lugar)" },
+            { label: "Toalha de mãos no balcão (1 uni)" },
+            { label: "Pano de cozinha no balcão (1 uni)" },
+            { label: "Idem em gaveta: 1 toalha de mãos + 1 pano de cozinha de reserva" },
+            { label: "2 pegas no lugar" },
+            { label: `Toalha de mesa posta + ${h} individual${h > 1 ? 'is' : ''} (1 por hóspede)`, note: `${h} hóspede${h > 1 ? 's' : ''}` },
+          ]
+        },
+        {
+          icon: "🚿", title: "Têxteis de banho",
+          items: [
+            { label: "Tapete de banho (colocar no lugar)" },
+            { label: "1 toalha de mãos no toalheiro" },
+            { label: `Toalha${h > 1 ? 's' : ''} de rosto — 1 por hóspede (${h})` },
+            { label: `Toalha${h > 1 ? 's' : ''} de banho — 1 por hóspede (${h})` },
+          ]
+        },
+        {
+          icon: "🛋", title: "Têxteis de casa",
+          items: [
+            { label: `${h} manta${h > 1 ? 's' : ''} nos armários dos quartos (1 por hóspede — sempre)`, note: "Nos armários, não nas camas" },
+          ]
+        },
+      ]
+    },
+    {
+      group: "Recargas e consumíveis",
+      sections: [
+        {
+          icon: "🧴", title: "Cozinha",
+          items: [
+            { label: "Detergente de cozinha (verificar/repor)" },
+            { label: "Pastilhas para máquina de loiça (verificar/repor)" },
+            { label: "Detergente para máquina de roupa (verificar/repor)" },
+            { label: "Esponja e esfregão: substituir se estiverem em mau estado" },
+            { label: `${h} cápsula${h > 1 ? 's' : ''} de café — 1 por hóspede, 1º dia` },
+            { label: "Retirar cápsulas usadas (lixo comum — não se reciclam)" },
+            { label: "Lavar contentor de água da máquina de café sem detergente, abastecer e garantir que está bem fixo" },
+            { label: "Esvaziar o jarro elétrico, se houver" },
+            { label: `${h} pacote${h > 1 ? 's' : ''} de açúcar — 1 por hóspede, 1º dia` },
+            { label: `${h} saqueta${h > 1 ? 's' : ''} de chá — 1 por hóspede, 1º dia` },
+            { label: "Sal (verificar/repor)" },
+            { label: "Pimenta (verificar/repor)" },
+            { label: "Canela (verificar/repor)" },
+            { label: "Azeite (verificar/repor)" },
+            { label: "Vinagre (verificar/repor)" },
+            { label: "Rolo de papel de cozinha (verificar/repor)" },
+          ]
+        },
+        {
+          icon: "🚿", title: "Casa de banho",
+          items: [
+            { label: "Gel de duche (verificar/repor)" },
+            { label: "Shampoo (verificar/repor)" },
+            { label: "Gel de mãos (verificar/repor)" },
+            { label: "Papel higiénico: deixar sempre 4 rolos (incluindo o encertado)", note: "Reutilizar rolos com uso restante dobrando a ponta — só recolher se tiverem menos de ~6 utilizações (usar esses para limpar vidros). Nunca deixar menos de 4 rolos no total." },
+          ]
+        },
+      ]
+    },
+    {
+      group: "Sazonal",
+      sections: [
+        {
+          icon: "🔥", title: "Inverno — lareira e salamandra",
+          seasonal: "inverno",
+          items: [
+            { label: "Colocar tapetes nos quartos", note: "Em adição ao que está — só no inverno" },
+            { label: "Colocar lenha suficiente para 1 dia" },
+            { label: "Colocar acendalhas" },
+            { label: "Colocar fósforos (ou isqueiro)" },
+          ]
+        },
+      ]
+    },
+  ];
+}
+
+let state = {};
+
+function getInputs() {
+  const h = parseInt(document.getElementById('field-hospedes-num').value) || 1;
+  const n = parseInt(document.getElementById('field-noites').value) || 2;
+  return { h, n };
+}
+
+function init() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('field-data').value = today;
+  const saved = localStorage.getItem('al-checklist-v2');
+  if (saved) state = JSON.parse(saved);
+  render();
+}
+
+function flatKey(gi, si, ii) { return `${gi}-${si}-${ii}`; }
+
+function render() {
+  const { h, n } = getInputs();
+  const data = buildData(h, n);
+  const container = document.getElementById('checklist-container');
+  container.innerHTML = '';
+
+  let totalAll = 0, doneAll = 0;
+
+  data.forEach((group, gi) => {
+    // filtrar secções sazonais
+    const sections = group.sections;
+    if (!sections.length) return;
+
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'group';
+
+    const groupLabel = document.createElement('div');
+    groupLabel.className = 'group-label';
+    groupLabel.textContent = group.group;
+    groupDiv.appendChild(groupLabel);
+
+    sections.forEach((section, si) => {
+      const total = section.items.length;
+      const done = section.items.filter((_, ii) => state[flatKey(gi, si, ii)]).length;
+      totalAll += total;
+      doneAll += done;
+
+      const secDiv = document.createElement('div');
+      secDiv.className = 'section';
+      secDiv.innerHTML = `
+        <div class="section-header">
+          <div class="section-title"><span>${section.icon}</span>${section.title}</div>
+          <span class="section-count">${done}/${total}</span>
+        </div>
+        <div class="items">
+          ${section.items.map((item, ii) => {
+            const key = flatKey(gi, si, ii);
+            const isDone = state[key] || false;
+            return `
+              <div class="item ${isDone ? 'done' : ''}" onclick="toggle('${key}')">
+                <div class="checkbox"><span class="checkmark">✓</span></div>
+                <div>
+                  <div class="item-label">${item.label}</div>
+                  ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
+                </div>
+              </div>`;
+          }).join('')}
+        </div>`;
+      groupDiv.appendChild(secDiv);
+    });
+
+    container.appendChild(groupDiv);
+  });
+
+  const pct = totalAll ? (doneAll / totalAll * 100) : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${doneAll} / ${totalAll}`;
+}
+
+function toggle(key) {
+  state[key] = !state[key];
+  localStorage.setItem('al-checklist-v2', JSON.stringify(state));
+  render();
+}
+
+function resetAll() {
+  if (confirm('Recomeçar a checklist?')) {
+    state = {};
+    localStorage.removeItem('al-checklist-v2');
+    document.getElementById('field-responsavel').value = '';
+    document.getElementById('field-obs').value = '';
+    document.getElementById('field-dano-tipo').value = '';
+    document.getElementById('field-dano-desc').value = '';
+    document.getElementById('field-hora-inicio').value = '';
+    document.getElementById('field-hora-fim').value = '';
+    document.getElementById('field-hospedes-num').value = '';
+    document.getElementById('field-noites').value = '';
+    document.getElementById('field-al').value = '';
+    document.getElementById('field-data').value = new Date().toISOString().split('T')[0];
+    render();
+  }
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => { t.className = 'toast'; }, 4000);
+}
+
+async function guardarRegisto() {
+  const dataVal = document.getElementById('field-data').value;
+  const al = document.getElementById('field-al').value;
+  const responsavel = document.getElementById('field-responsavel').value.trim();
+  const obs = document.getElementById('field-obs').value.trim();
+  const danoTipo = document.getElementById('field-dano-tipo').value.trim();
+  const danoDesc = document.getElementById('field-dano-desc').value.trim();
+  const horaInicio = document.getElementById('field-hora-inicio').value;
+  const horaFim = document.getElementById('field-hora-fim').value;
+  const duracao = (horaInicio && horaFim) ? `${horaInicio}–${horaFim}` : '—';
+  const { h, n } = getInputs();
+
+  if (!dataVal) {
+    showToast('Preenche a data.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  btn.textContent = 'A guardar...';
+
+  const fullData = buildData(h, n);
+  const porFazer = [];
+  let totalAll = 0, doneAll = 0;
+
+  fullData.forEach((group, gi) => {
+    group.sections.forEach((section, si) => {
+      section.items.forEach((item, ii) => {
+        totalAll++;
+        if (state[flatKey(gi, si, ii)]) {
+          doneAll++;
+        } else {
+          porFazer.push(`[${section.title}] ${item.label}`);
+        }
+      });
+    });
+  });
+
+  const obsCompleto = [
+    obs,
+    porFazer.length > 0 ? `Por fazer: ${porFazer.join(' | ')}` : ''
+  ].filter(Boolean).join(' — ');
+
+  const danoStr = danoTipo ? `${danoTipo}: ${danoDesc || '(sem descrição)'}` : '—';
+  const row = [dataVal, al, responsavel, h, n, duracao, `${doneAll}/${totalAll}`, danoStr, obsCompleto || '—'];
+
+  try {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbxm8LkZlYfqCYNOEE1aMzGUSiJIspmmM6mLjr_Y-CHUgvoEHom7b5niSXmZWsW4vK4H/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ row }),
+    });
+
+    showToast('✓ Registo guardado!', 'success');
+    state = {};
+    localStorage.removeItem('al-checklist-v2');
+    document.getElementById('field-responsavel').value = '';
+    document.getElementById('field-obs').value = '';
+    document.getElementById('field-dano-tipo').value = '';
+    document.getElementById('field-dano-desc').value = '';
+    document.getElementById('field-data').value = new Date().toISOString().split('T')[0];
+    render();
+
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao guardar. Verifica a consola.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↑ Guardar na Spreadsheet';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
