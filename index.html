@@ -381,13 +381,13 @@
 </div>
 
 <div class="sheet-link">
-  <a href="https://docs.google.com/spreadsheets/d/1zgBYiw_2c0BJihpqGJbsfanZB5I99R7kx7fdDCULQWA" target="_blank">→ Abrir folha de registos</a>
+  <a href="https://docs.google.com/spreadsheets/d/1FuZcEyiD58nnNYXM9Fn_S8iMkllyfwXv5VrzFMdyInM" target="_blank">→ Abrir folha de registos</a>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const SPREADSHEET_ID = '1zgBYiw_2c0BJihpqGJbsfanZB5I99R7kx7fdDCULQWA';
+const SPREADSHEET_ID = '1FuZcEyiD58nnNYXM9Fn_S8iMkllyfwXv5VrzFMdyInM';
 
 // Estrutura de dados: grupos > secções > itens
 // item: { label, note, seasonal:'inverno'|null, dynamic: fn(h,n)=>string|null }
@@ -753,36 +753,26 @@ async function guardarRegisto() {
   btn.textContent = 'A guardar...';
 
   const fullData = buildData(h, n);
-  const porFazer = [];
+  const itemStates = [];
   let totalAll = 0, doneAll = 0;
 
   fullData.forEach((group, gi) => {
     group.sections.forEach((section, si) => {
       section.items.forEach((item, ii) => {
         totalAll++;
-        if (state[flatKey(gi, si, ii)]) {
-          doneAll++;
-        } else {
-          porFazer.push(`[${section.title}] ${item.label}`);
-        }
+        const done = !!state[flatKey(gi, si, ii)];
+        if (done) doneAll++;
+        itemStates.push(done ? '✓' : '—');
       });
     });
   });
 
-  const obsCompleto = [
-    obs,
-    porFazer.length > 0 ? `Por fazer: ${porFazer.join(' | ')}` : ''
-  ].filter(Boolean).join(' — ');
-
   const danoStr = danoTipo ? `${danoTipo}: ${danoDesc || '(sem descrição)'}` : '—';
-  const row = [dataVal, al, responsavel, h, n, duracao, `${doneAll}/${totalAll}`, danoStr, obsCompleto || '—'];
+  const row = [dataVal, al, responsavel, h, n, horaInicio || '—', horaFim || '—', danoStr, obs || '—', ...itemStates];
 
   try {
-    const response = await fetch('https://script.google.com/macros/s/AKfycbxm8LkZlYfqCYNOEE1aMzGUSiJIspmmM6mLjr_Y-CHUgvoEHom7b5niSXmZWsW4vK4H/exec', {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify({ row }),
-    });
+    const url = 'https://script.google.com/macros/s/AKfycbytZ9ts1r1ntWjusMJOXQ6VvYSHFr_60cZ26ZU1qg9XyfQHbqZ0gFsYeSv_xYADUdq9/exec?row=' + encodeURIComponent(JSON.stringify(row));
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
 
     showToast('✓ Registo guardado!', 'success');
     state = {};
