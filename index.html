@@ -771,7 +771,7 @@ async function guardarRegisto() {
   const row = [dataVal, al, responsavel, h, n, horaInicio || '—', horaFim || '—', danoStr, obs || '—', ...itemStates];
 
   try {
-    const url = 'https://script.google.com/macros/s/AKfycbytZ9ts1r1ntWjusMJOXQ6VvYSHFr_60cZ26ZU1qg9XyfQHbqZ0gFsYeSv_xYADUdq9/exec?row=' + encodeURIComponent(JSON.stringify(row));
+    const url = 'https://script.google.com/macros/s/AKfycbxgSQM4RY_P23qtgeBrZQQcBwJXhYPoDjPiWZG17bI0Ew9L54uRxtkCHJUPurQ3LFg/exec?row=' + encodeURIComponent(JSON.stringify(row));
     await fetch(url, { method: 'GET', mode: 'no-cors' });
 
     showToast('✓ Registo guardado!', 'success');
