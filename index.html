@@ -435,6 +435,7 @@ function buildData(h, n) {
             { label: "Limpar topos dos armários" },
             { label: "Limpar tomadas e interruptores em todo o espaço" },
             { label: "Limpar marcas e dedadas nas portas, vidros e espelhos" },
+            { label: "Limpeza de janelas (estores, vidros e calha) — sempre que necessário" },
           ]
         },
         {
@@ -771,8 +772,18 @@ async function guardarRegisto() {
   const row = [dataVal, al, responsavel, h, n, horaInicio || '—', horaFim || '—', danoStr, obs || '—', ...itemStates];
 
   try {
-    const url = 'https://script.google.com/macros/s/AKfycbxgSQM4RY_P23qtgeBrZQQcBwJXhYPoDjPiWZG17bI0Ew9L54uRxtkCHJUPurQ3LFg/exec?row=' + encodeURIComponent(JSON.stringify(row));
-    await fetch(url, { method: 'GET', mode: 'no-cors' });
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://script.google.com/macros/s/AKfycbzch0hIZ7ewiPL7eWMuFkfHYqF6vX9ep7ibT1t_amNNnbsYpG10GYIpVh6TW0rPw88/exec';
+    form.target = 'hidden-iframe';
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'row';
+    input.value = JSON.stringify(row);
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
 
     showToast('✓ Registo guardado!', 'success');
     state = {};
@@ -795,5 +806,6 @@ async function guardarRegisto() {
 
 init();
 </script>
+<iframe name="hidden-iframe" style="display:none"></iframe>
 </body>
 </html>
